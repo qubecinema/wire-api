@@ -76,7 +76,7 @@ struct KeySmithClient::Impl
     {
         if (!_refreshToken.empty())
             ResetToken();
-        
+
         if (filesystem::exists(_ksRootCertFilePath))
         {
             filesystem::remove(_ksRootCertFilePath);
@@ -234,7 +234,7 @@ struct KeySmithClient::Impl
         {
             throw runtime_error(_GetErrorMessage(response).c_str());
         }
-        
+
         return _ParseJsonProperty(body(response), "id");
     }
 

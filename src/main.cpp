@@ -8,15 +8,18 @@
 #include <unistd.h>
 #include <cstdlib>
 
+#include <boost/algorithm/string/replace.hpp>
+
 using namespace KEY_SMITH_NS;
 using namespace std;
 
-void ShowOptions()
+void ShowActionMenu()
 {
-    cout << endl << "1. Sign PKL/CPL." << endl;
+    cout << endl;
+    cout << "1. Sign PKL/CPL." << endl;
     cout << "2. Upload DKDM." << endl;
     cout << "3. Quit." << endl << endl;
-    cout << "Select an option: ";
+    cout << "Please select an action?";
 }
 
 void LaunchCommand(string url)
@@ -31,16 +34,22 @@ void LaunchCommand(string url)
     system(launchCmd.c_str());
 }
 
-string GetFileContents(string filePath)
+string GetFileContents(const string& filePath)
 {
     ifstream fileStream(filePath.c_str());
+    if (!fileStream.is_open())
+        throw runtime_error("Opening file " + filePath + " for reading failed");
+
     string content((istreambuf_iterator<char>(fileStream)), (istreambuf_iterator<char>()));
     return content;
 }
 
-void WriteToFile(string filePath, string content)
+void WriteToFile(const string& filePath, const string& content)
 {
     std::ofstream fileStream(filePath.c_str());
+    if (!fileStream.is_open())
+        throw runtime_error("Opening file " + filePath + " for writing failed");
+
     fileStream << content;
 }
 
@@ -50,87 +59,92 @@ int main (int argc, char *argv[])
     try
     {
         if (argc != 2)
-            throw runtime_error("Usage: KeySmithClient <ClientId>");
-        
+            throw runtime_error("Usage: KeySmithClient <Client ID>");
+
         keySmithClient.reset(new KeySmithClient("https://api.keysmith.com", argv[1]));
-        
-        cout << "Launching KeySmith sign in page in default browser - Please wait ..." << endl;
+
         LaunchCommand(keySmithClient->GetLoginUrl());
-        
+        cout << "KeySmith sign-in page opened in web browser. Please sign-in to proceed." << endl;
+
+        cout << "Waiting for user to sign-in..." << std::flush;
         while (!keySmithClient->IsAuthenticated())
         {
-            // TODO: "..." should be animated
-            cout << '\r' << "Please sign in to KeySmith to proceed ..." << std::flush;
 
             this_thread::sleep_for(std::chrono::seconds(2)); // Waiting for 2 seconds to poll again
         }
-        cout << endl << "Fetching user information - Please wait ..." << endl;
+        cout << endl;
+
         string email, companyName;
         keySmithClient->GetUserInfo(email, companyName);
-        cout << "Successfully signed in as " << email.c_str() << " (" << companyName.c_str() << ")" << endl;
+        cout << "Successfully signed in as " << email << " (" << companyName << ")" << endl;
 
         while (true)
         {
-            ShowOptions();
+            ShowActionMenu();
             int input;
             cin >> input;
-            
+
             switch (input)
             {
-                case 1:
+                case 1: // Sign PKL/CPL
                 {
-                    // Sign PKL/CPL
-                    cout << "Enter the path of unsigned CPL/PKL XML file: ";
-                    string cplOrPklPath;
-                    cin >> cplOrPklPath;
-                    
-                    string cplOrPkl = GetFileContents(cplOrPklPath);
-                    cout << "Sending CPL/PKL for signing ..." << endl;
-                    string cplOrPklId = keySmithClient->Sign(cplOrPkl);
-                    
-                    string signedCplOrPklXml;
-                    while (!keySmithClient->GetSignedAssetXml(cplOrPklId, signedCplOrPklXml))
-                    {
-                        // TODO: "..." should be animated
-                        cout << '\r' << "Please wait while we sign CPL/PKL xml ..." << std::flush;
+                    cout << "Enter unsigned CPL/PKL file path?";
+                    string filePath;
+                    cin >> filePath;
 
-                        this_thread::sleep_for(std::chrono::seconds(2)); // waiting for 2 seconds to poll again
+                    string unsignedXml = GetFileContents(filePath);
+
+                    cout << "Uploading CPL/PKL to KeySmith for signing..." << endl;
+                    string signJobId = keySmithClient->Sign(unsignedXml);
+
+                    cout << "Waiting for KeySmith to sign the CPL/PKL..." << std::flush;
+                    string signedXml;
+                    while (!keySmithClient->GetSignedAssetXml(signJobId, signedXml))
+                    {
+                        this_thread::sleep_for(std::chrono::seconds(2));
                     }
-                    string outputFile = cplOrPklPath;
-                    outputFile += ".Signed.xml";
-                    WriteToFile(outputFile, signedCplOrPklXml);
-                    cout << endl << "Successfully signed CPL/PKL and saved into " << outputFile.c_str() << endl;
+                    cout << endl;
+
+                    string signedFilePath = boost::ireplace_all_copy(filePath, ".xml", ".signed.xml");
+                    WriteToFile(signedFilePath, signedXml);
+
+                    cout << "CPL/PKL successfully signed and available here " << signedFilePath << endl;
                     break;
                 }
-                case 2:
-                {
-                    // Upload DKDM
-                    cout << "Enter the path of DKDM XML file: ";
-                    string kdmPath;
-                    cin >> kdmPath;
-                    string kdm = GetFileContents(kdmPath);
-                    cout << "Sending DKDM to KeySmith ..." << endl;
-                    string kdmId = keySmithClient->UploadKdm(kdm);
-                    string kdmXml;
-                    while (!keySmithClient->GetSignedAssetXml(kdmId, kdmXml))
-                    {
-                        // TODO: "..." should be animated
-                        cout << '\r' << "Please wait while we sign DKDM xml ..." << std::flush;
 
-                        this_thread::sleep_for(std::chrono::seconds(2)); // waiting for 2 seconds to poll again
+                case 2: // Upload DKDM
+                {
+                    cout << "Enter DKDM file path?";
+                    string filePath;
+                    cin >> filePath;
+
+                    string xml = GetFileContents(filePath);
+                    cout << "Uploading DKDM to KeySmith..." << endl;
+                    string signJobId = keySmithClient->UploadKdm(xml);
+
+                    // DKDMs are internally signed before getting stored. A successful DKDM sign
+                    // indicates DKDM passes all validations and successfully uploaded.
+                    cout << "Waiting for KeySmith to compete the DKDM upload..." << std::flush;
+                    string statusJson;
+                    while (!keySmithClient->GetSignedAssetXml(signJobId, statusJson))
+                    {
+                        this_thread::sleep_for(std::chrono::seconds(2));
                     }
-                    cout << endl << "Successfully uploaded DKDM into KeySmith." << endl;
+                    cout << endl;
+
+                    // DKDMs once uploaded can't be retrieved out of KeySmith. But we can generate
+                    // DKDM/KDM from it through KeySmith.
+                    cout << "DKDM successfully signed and available uploaded DKDM into KeySmith." << endl;
                     break;
                 }
-                case 3:
+
+                case 3: // Quit
                 {
-                    // Delete Token and Quit
-                    cout << "Signing out from KeySmith - Please wait ..." << endl;
+                    // deleting access token ensures that it can't be used again.
                     keySmithClient->ResetToken();
-                    LaunchCommand(keySmithClient->GetLogoutUrl());
                     return 0;
                 }
-                    
+
                 default:
                 {
                     cout << "Please select a valid option ... " << endl;
@@ -145,31 +159,15 @@ int main (int argc, char *argv[])
         try
         {
             // Just to make sure we delete the token in case of failure.
-            if (keySmithClient.get() && keySmithClient->GetToken() != "")
+            if (keySmithClient && keySmithClient->GetToken() != "")
                 keySmithClient->ResetToken();
         }
         catch (...)
         {
-            // Purposefully left blank
+            // intentionally ignored
         }
 
         return -1;
-    }
-    catch(...)
-    {
-        cout << "Unexpected exception occured" << endl;
-        try
-        {
-            // Just to make sure we delete the token in case of failure.
-            if (keySmithClient.get())
-                keySmithClient->ResetToken();
-        }
-        catch (...)
-        {
-            // Purposefully left blank
-        }
-
-        return -2;
     }
 
     return 0;
