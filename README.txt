@@ -1,22 +1,25 @@
-Build instructions for KeySmithClient
+Overview
+========
+KeySmithClient is a C++ application demonstrating KeySmith mastering APIs. It demonstrates
+the following functionalities of a mastering client.
+    - Logging in and acquiring acess token
+    - Obtaining logged in user and company information
+    - Signing a CPL/PKL using KeySmith
+    - Uploading DKDM into KeySmith
 
-KeySmithClient application can be build for Mac as well as windows.
+Dependencies
+============
+The following C++ libraries are required to build KeySmithClient.
+    - Boost v1.59.0 or latest
+    - cpp-netlib v0.11.1 or latest
+    - OpenSSL 1.0.2 or latest
 
--> Build instruction for Mac CLI of KeySmithClient:-
-	<CMAKE_PATH_OF_KEYSMITHCLIENT> - This is the CMakeList.txt path where KeySmithClient source is extracted.
+Build Instructions
+=================
+Extract the source of KeySmithClient into a directory and execute the following inside the directory.
 
-  I) Prerequisites:- 
-  	1) Boost latest version is needed. We have used Boost v1.59.0.
-  	2) Cpp-NetLib latest version is needed. We have used Cpp-Netlib v0.11.1-final.
-  	3) OpenSsl - Default openssl from Mac will be used by Cpp-NetLib.
-  
-  II) Build KeySmithCLient:-
-  	1) pushd <CMAKE_PATH_OF_KEYSMITHCLIENT>
-  	1. mkdir build
-  	2. pushd build
-  	3. cmake -DBOOST_INCLUDEDIR=<Boost include path> -DBOOST_LIBRARYDIR=<boost library path> -DCPP-NETLIB_INCLUDE_DIR=<Cpp-NetLib include path> -DCPP-NETLIB_LIBRARY_DIR=<Cpp-NetLib library path> ..
-  	4. make
+    $ mkdir build
+    $ cd build
+    $ cmake -DBOOST_INCLUDEDIR=<boost include dir path> -DBOOST_LIBRARYDIR=<boost library dir path> -DCPP-NETLIB_INCLUDE_DIR=<cpp-netLib include dir path> -DCPP-NETLIB_LIBRARY_DIR=<cpp-NetLib library dir path> ..
+    $ make
 
--> Build instruction for Windows CLI of KeySmithClient:-
-	
-	I) TODO
