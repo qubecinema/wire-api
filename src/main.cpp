@@ -95,11 +95,11 @@ int main (int argc, char *argv[])
                     string unsignedXml = GetFileContents(filePath);
 
                     cout << "Uploading CPL/PKL to KeySmith for signing..." << endl;
-                    string signJobId = keySmithClient->Sign(unsignedXml);
+                    string xmlId = keySmithClient->Sign(unsignedXml);
 
                     cout << "Waiting for KeySmith to sign the CPL/PKL..." << std::flush;
                     string signedXml;
-                    while (!keySmithClient->GetSignedAssetXml(signJobId, signedXml))
+                    while (!keySmithClient->GetSignedAssetXml(xmlId, signedXml))
                     {
                         this_thread::sleep_for(std::chrono::seconds(2));
                     }
@@ -120,13 +120,13 @@ int main (int argc, char *argv[])
 
                     string xml = GetFileContents(filePath);
                     cout << "Uploading DKDM to KeySmith..." << endl;
-                    string signJobId = keySmithClient->UploadKdm(xml);
+                    string xmlId = keySmithClient->UploadKdm(xml);
 
                     // DKDMs are internally signed before getting stored. A successful DKDM sign
                     // indicates DKDM passes all validations and successfully uploaded.
                     cout << "Waiting for KeySmith to compete the DKDM upload..." << std::flush;
                     string statusJson;
-                    while (!keySmithClient->GetSignedAssetXml(signJobId, statusJson))
+                    while (!keySmithClient->GetSignedAssetXml(xmlId, statusJson))
                     {
                         this_thread::sleep_for(std::chrono::seconds(2));
                     }

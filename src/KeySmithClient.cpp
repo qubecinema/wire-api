@@ -34,9 +34,12 @@ using namespace std;
 typedef http::basic_response<http::tags::http_server> http_response;
 
 // For readability following const declared, but we shouldn't have any other consts like this
-const string AUTH_PENDING_CODE = "AUTH2021";
-const string SESSION_EXPIRED = "AUTH4044";
-const string USER_DENIED = "AUTH4041";
+namespace KeySmithErrors
+{
+    const string AUTH_PENDING_CODE = "AUTH2021";
+    const string SESSION_EXPIRED = "AUTH4044";
+    const string USER_DENIED = "AUTH4041";
+}
 
 struct KeySmithClient::Impl
 {
@@ -51,7 +54,7 @@ struct KeySmithClient::Impl
 
         if (!_keySmithUrl.is_valid())
         {
-            throw runtime_error("Invalid KeySmith URL!");
+            throw runtime_error("Invalid KeySmith URL");
         }
 
         _InitHttpClient();
@@ -74,9 +77,6 @@ struct KeySmithClient::Impl
 
     ~Impl()
     {
-        if (!_refreshToken.empty())
-            ResetToken();
-
         if (filesystem::exists(_ksRootCertFilePath))
         {
             filesystem::remove(_ksRootCertFilePath);
@@ -121,11 +121,11 @@ struct KeySmithClient::Impl
         {
             if (status(response) == http_response::not_found)
             {
-                if (_ParseJsonProperty(body(response), "code") == USER_DENIED.c_str())
+                if (_ParseJsonProperty(body(response), "code") == KeySmithErrors::USER_DENIED)
                 {
                     throw runtime_error("You have denied access");
                 }
-                else if (_ParseJsonProperty(body(response), "code") == SESSION_EXPIRED.c_str())
+                else if (_ParseJsonProperty(body(response), "code") == KeySmithErrors::SESSION_EXPIRED)
                 {
                     throw runtime_error("KeySmith sign in session expired");
                 }
@@ -134,7 +134,7 @@ struct KeySmithClient::Impl
         }
 
         if (status(response) == http_response::accepted &&
-            _ParseJsonProperty(body(response), "code") == AUTH_PENDING_CODE.c_str())
+            _ParseJsonProperty(body(response), "code") == KeySmithErrors::AUTH_PENDING)
         {
             return false;
         }
@@ -201,15 +201,6 @@ struct KeySmithClient::Impl
 
     string GetCertificateChain()
     {
-        // Here it returns a new access token which is valid for an hour
-        // Also we assume that the following tasks will happen within
-        // an hour
-        // 1) company certificate
-        // 2) CPL signing
-        // 3) KDM uploading
-        // 4) PKL signing
-        _accessToken = _GetAccessToken(_refreshToken);
-
         if (!_companies.size())
         {
             _GetCompanies();

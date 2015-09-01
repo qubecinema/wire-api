@@ -5,7 +5,7 @@
  * @copyright Copyright &copy; 2015 Qube Cinema Inc. All Rights reserved
  *
  * @brief
- * Contains API(Application Programming Interfaces) to communicate with KeySmith.
+ * Contains declaration for KeySmithClient class.
  */
 
 #pragma once
@@ -20,7 +20,7 @@
 KEY_SMITH_NS_START
 
 /**
- * KeySmithClient exposes API(Application Programming Interfaces) to communicate with KeySmith.
+ * KeySmithClient is a wrapper class for KeySmith mastering APIs.
  */
 class KeySmithClient
 {
@@ -62,25 +62,25 @@ public:
     };
 
     /**
-     * Construct KeySmithClient class object.
+     * Constructs KeySmithClient class object.
      *
-     * @param[in] keySmithUrl The URL(Uniform Resource Locator) to access KeySmith services
-     * @param[in] clientId The unique id of the client application provided by KeySmith
-     * @param[in] token The refresh token of a previous KeySmith QAuth session
+     * @param[in] keySmithUrl The URL of the KeySmith
+     * @param[in] clientId The unique identifier of the client application provided by KeySmith
+     * @param[in] token Optional refresh token from previous KeySmith authorization
      */
     KeySmithClient(const std::string& keySmithUrl, const std::string& clientId,
                    const std::string& token = "");
 
     /**
-     * Destruct KeySmithClient class object.
+     * Destructs KeySmithClient class object.
      */
     ~KeySmithClient();
 
     /**
-     * Get KeySmith login URL for this specific client application
-     * This method also starts the KeySmith OAuth authentication process by starting a login session
-     * that is valid for only 15 minutes.
-     * Login is authenticated by polling KeySmithClient::IsAuthenticated till true
+     * Get KeySmith login URL.
+     * This method also starts the KeySmith authentication process by starting a login session
+     * that is valid for only 15 minutes. Authentication status can be obtained by calling
+     * KeySmithClient::IsAuthenticated method repeatedly till it returns 'true'.
      *
      * @returns URL to login to KeySmith
      */
@@ -89,28 +89,28 @@ public:
     /**
      * Get status of whether user has logged in and access token is available.
      * User should first call KeySmithClient::GetLoginUrl to initiate KeySmith authentication and
-     * poll this method till true to complete authentication
+     * poll this method till true is returned.
      *
      * @returns true if user has logged in and token is available
      */
     bool IsAuthenticated();
 
     /**
-     * @brief Get refresh token for current OAuth session
+     * Get refresh token for authorization.
      *
      * @returns refresh token provided by KeySmith.
      */
     std::string GetToken();
 
     /**
-     * Get URL to terminate current OAuth session and log out of KeySmith
+     * Get URL for logging out currently logged in KeySmith user.
      *
      * @returns URL to log out of KeySmith
      */
     std::string GetLogoutUrl();
 
     /**
-     * Delete the refresh token and access token of the current OAuth session.
+     * Delete the refresh token and access token of the current authorization.
      * This API should be called after a successful logout to ensure the previous session has ended.
      */
     void ResetToken();
@@ -124,39 +124,38 @@ public:
     void GetUserInfo(std::string& emailId, std::string& companyName);
 
     /**
-     * Get certificate chain of active company set by user.
-     * The certificate chain contains certificates of leaf, intermediate and root in PEM
-     * (Privacy-enhanced Electronic Mail) form concatenated together
+     * Get certificate chain of user company.
+     * The certificate chain contains certificates of leaf, intermediate and root in PEM form.
      *
      * @returns certificate chain
      */
     std::string GetCertificateChain();
 
     /**
-     * Uploads unsigned KDM for providing Key information to KeySmith
+     * Uploads unsigned DKDM into KeySmith
+     * Use KeySmithClient::IsAssetXmlSigned to know status of the upload process.
      *
-     * @param[in] kdmXml KDM to be uploaded and signed
+     * @param[in] kdmXml DKDM XML to be uploaded and signed.
      *
-     * @returns Unique UUID of KDM
+     * @returns Unique identifier of the DKDM
      */
     std::string UploadKdm(const std::string& kdmXml);
 
     /**
-     * Posts an asset XML to be signed by KeySmith
-     * Asset can be CPL or PKL
-     * Use KeySmithClient::IsAssetXmlSigned to know status of the signing process
+     * Posts an CPL/PKL XML to be signed by KeySmith.
+     * Use KeySmithClient::IsAssetXmlSigned to know status of the signing process.
      *
-     * @param[in] assetXml to be signed
+     * @param[in] assetXml CPL/PKL XML to be signed
      *
-     * @returns Unique UUID of CPL or PKL
+     * @returns Unique identifier of CPL/PKL
      */
     std::string Sign(const std::string& assetXml);
 
     /**
-     * Get status of signing of asset, and obtain the signed asset if available
+     * Get status of asset signing and obtain the signed asset if available.
      *
-     * @param[in] assetId CPL or PKL UUID
-     * @param[out] signedXmlAsset Signed CPL or PKL in string format
+     * @param[in] assetId CPL/PKL/DKDM unique identifier
+     * @param[out] signedXmlAsset Signed CPL/PKL XML. For DKDM this will be empty.
      *
      * @returns true if the asset XML is signed and can be retrieved, else false
      */
