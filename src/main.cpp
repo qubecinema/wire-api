@@ -19,7 +19,7 @@ void ShowActionMenu()
     cout << "1. Sign PKL/CPL." << endl;
     cout << "2. Upload DKDM." << endl;
     cout << "3. Quit." << endl << endl;
-    cout << "Please select an action?";
+    cout << "Please select an action? ";
 }
 
 void LaunchCommand(string url)
@@ -88,7 +88,7 @@ int main (int argc, char *argv[])
             {
                 case 1: // Sign PKL/CPL
                 {
-                    cout << "Enter unsigned CPL/PKL file path?";
+                    cout << "Enter unsigned CPL/PKL file path? ";
                     string filePath;
                     cin >> filePath;
 
