@@ -36,10 +36,17 @@ typedef http::basic_response<http::tags::http_server> http_response;
 // For readability following const declared, but we shouldn't have any other consts like this
 namespace KeySmithErrors
 {
-    const string AUTH_PENDING_CODE = "AUTH2021";
+    const string AUTH_PENDING = "AUTH2021";
     const string SESSION_EXPIRED = "AUTH4044";
     const string USER_DENIED = "AUTH4041";
 }
+
+enum class HttpRequestMethod
+{
+    GET,
+    POST,
+    DELETE,
+};
 
 struct KeySmithClient::Impl
 {
@@ -335,7 +342,7 @@ private:
             request << header("Accept", contentType);
         }
 
-        return _client->get(request);
+        return _GetResponse(HttpRequestMethod::GET, request);
     }
 
     http::client::response _PostRequest(const uri::uri& requestUri, const string& requestBody,
@@ -352,7 +359,7 @@ private:
             request << header("Content-Type", contentType);
         }
 
-        return _client->post(request, requestBody);
+        return _GetResponse(HttpRequestMethod::POST, request, requestBody);
     }
 
     http::client::response _DeleteRequest(const uri::uri& requestUri)
@@ -364,7 +371,43 @@ private:
             request << header("Authorization", _GetAuthorizationHeader());
         }
 
-        return _client->delete_(request);
+        return _GetResponse(HttpRequestMethod::DELETE, request);
+    }
+
+    http::client::response _GetResponse(HttpRequestMethod requestMethod,
+                                        http::client::request& request,
+                                        const string& requestBody = "")
+    {
+        auto getResponse = [&]()
+            {
+                switch (requestMethod)
+                {
+                    case HttpRequestMethod::GET:
+                        return _client->get(request);
+
+                    case HttpRequestMethod::POST:
+                        return _client->post(request, requestBody);
+
+                    case HttpRequestMethod::DELETE:
+                        return _client->delete_(request);
+                }
+
+                throw runtime_error("HTTP request not implemented");
+            };
+
+        http::client::response response = getResponse();
+        if (status(response) == http_response::forbidden && (!_accessToken.empty()))
+        {
+            _accessToken = _GetAccessToken(_refreshToken);
+
+            string headerKey = "Authorization";
+            request.remove_header(headerKey);
+            request << header(headerKey, _GetAuthorizationHeader());
+
+            response = getResponse();
+        }
+
+        return response;
     }
 
     string _GetAccessToken(const string& refreshToken)
