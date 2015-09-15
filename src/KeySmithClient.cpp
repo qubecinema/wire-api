@@ -41,7 +41,7 @@ namespace KeySmithErrors
     const string USER_DENIED = "AUTH4041";
 }
 
-enum class HttpRequestType
+enum class HttpRequestMethod
 {
     GET,
     POST,
@@ -342,7 +342,7 @@ private:
             request << header("Accept", contentType);
         }
 
-        return _GetResponse(HttpRequestType::GET, request);
+        return _GetResponse(HttpRequestMethod::GET, request);
     }
 
     http::client::response _PostRequest(const uri::uri& requestUri, const string& requestBody,
@@ -359,7 +359,7 @@ private:
             request << header("Content-Type", contentType);
         }
 
-        return _GetResponse(HttpRequestType::POST, request, requestBody);
+        return _GetResponse(HttpRequestMethod::POST, request, requestBody);
     }
 
     http::client::response _DeleteRequest(const uri::uri& requestUri)
@@ -371,24 +371,24 @@ private:
             request << header("Authorization", _GetAuthorizationHeader());
         }
 
-        return _GetResponse(HttpRequestType::DELETE, request);
+        return _GetResponse(HttpRequestMethod::DELETE, request);
     }
 
-    http::client::response _GetResponse(HttpRequestType requestType,
+    http::client::response _GetResponse(HttpRequestMethod requestMethod,
                                         http::client::request& request,
                                         const string& requestBody = "")
     {
         auto getResponse = [&]()
             {
-                switch (requestType)
+                switch (requestMethod)
                 {
-                    case HttpRequestType::GET:
+                    case HttpRequestMethod::GET:
                         return _client->get(request);
 
-                    case HttpRequestType::POST:
+                    case HttpRequestMethod::POST:
                         return _client->post(request, requestBody);
 
-                    case HttpRequestType::DELETE:
+                    case HttpRequestMethod::DELETE:
                         return _client->delete_(request);
                 }
 
