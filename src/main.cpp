@@ -5,7 +5,6 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
-#include <unistd.h>
 #include <cstdlib>
 
 #include <boost/algorithm/string/replace.hpp>
@@ -46,7 +45,7 @@ string GetFileContents(const string& filePath)
 
 void WriteToFile(const string& filePath, const string& content)
 {
-    std::ofstream fileStream(filePath.c_str());
+    ofstream fileStream(filePath.c_str());
     if (!fileStream.is_open())
         throw runtime_error("Opening file " + filePath + " for writing failed");
 
@@ -55,7 +54,7 @@ void WriteToFile(const string& filePath, const string& content)
 
 int main (int argc, char *argv[])
 {
-    std::unique_ptr<KeySmithClient> keySmithClient;
+    unique_ptr<KeySmithClient> keySmithClient;
     try
     {
         if (argc != 2)
@@ -70,7 +69,7 @@ int main (int argc, char *argv[])
         while (!keySmithClient->IsAuthenticated())
         {
 
-            this_thread::sleep_for(std::chrono::seconds(2)); // Waiting for 2 seconds to poll again
+            this_thread::sleep_for(chrono::seconds(2)); // Waiting for 2 seconds to poll again
         }
         cout << endl;
 
@@ -101,7 +100,7 @@ int main (int argc, char *argv[])
                     string signedXml;
                     while (!keySmithClient->GetSignedAssetXml(xmlId, signedXml))
                     {
-                        this_thread::sleep_for(std::chrono::seconds(2));
+                        this_thread::sleep_for(chrono::seconds(2));
                     }
                     cout << endl;
 
@@ -128,7 +127,7 @@ int main (int argc, char *argv[])
                     string statusJson;
                     while (!keySmithClient->GetSignedAssetXml(xmlId, statusJson))
                     {
-                        this_thread::sleep_for(std::chrono::seconds(2));
+                        this_thread::sleep_for(chrono::seconds(2));
                     }
                     cout << endl;
 

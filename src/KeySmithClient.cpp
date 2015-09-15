@@ -43,9 +43,9 @@ namespace KeySmithErrors
 
 enum class HttpRequestMethod
 {
-    GET,
-    POST,
-    DELETE,
+    Get,
+    Post,
+    Delete
 };
 
 struct KeySmithClient::Impl
@@ -287,13 +287,8 @@ private:
 
             filesystem::ofstream certStream(_ksRootCertFilePath);
 
-#ifdef USE_KEYSMITH_STAGING
-            certStream.write(reinterpret_cast<const char*>(KEY_SMITH_STAGING_CERTIFICATE),
-                             char_traits<unsigned char>::length(KEY_SMITH_STAGING_CERTIFICATE));
-#else
             certStream.write(reinterpret_cast<const char*>(KEY_SMITH_PRODUCTION_CERTIFICATE),
                              char_traits<unsigned char>::length(KEY_SMITH_PRODUCTION_CERTIFICATE));
-#endif
 
             certStream.close();
         }
@@ -314,7 +309,7 @@ private:
         {
             return _ParseJsonProperty(static_cast<string>(body(response)), propertyName);
         }
-        catch (const exception& e)
+        catch (const exception&)
         {
             return static_cast<string>(status_message(response));
         }
@@ -342,7 +337,7 @@ private:
             request << header("Accept", contentType);
         }
 
-        return _GetResponse(HttpRequestMethod::GET, request);
+        return _GetResponse(HttpRequestMethod::Get, request);
     }
 
     http::client::response _PostRequest(const uri::uri& requestUri, const string& requestBody,
@@ -359,7 +354,7 @@ private:
             request << header("Content-Type", contentType);
         }
 
-        return _GetResponse(HttpRequestMethod::POST, request, requestBody);
+        return _GetResponse(HttpRequestMethod::Post, request, requestBody);
     }
 
     http::client::response _DeleteRequest(const uri::uri& requestUri)
@@ -371,7 +366,7 @@ private:
             request << header("Authorization", _GetAuthorizationHeader());
         }
 
-        return _GetResponse(HttpRequestMethod::DELETE, request);
+        return _GetResponse(HttpRequestMethod::Delete, request);
     }
 
     http::client::response _GetResponse(HttpRequestMethod requestMethod,
@@ -382,13 +377,13 @@ private:
             {
                 switch (requestMethod)
                 {
-                    case HttpRequestMethod::GET:
+                    case HttpRequestMethod::Get:
                         return _client->get(request);
 
-                    case HttpRequestMethod::POST:
+                    case HttpRequestMethod::Post:
                         return _client->post(request, requestBody);
 
-                    case HttpRequestMethod::DELETE:
+                    case HttpRequestMethod::Delete:
                         return _client->delete_(request);
                 }
 

@@ -3,11 +3,8 @@ cmake_minimum_required (VERSION 3.2)
 
 project (KeySmithClient)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+find_package(Boost 1.59 REQUIRED filesystem)
 
-find_package(Boost 1.59 REQUIRED system filesystem thread)
-
-# Check: version number 1.0.2 is not considered its taking 0.9.8 as default and works
 find_package(OpenSsl 1.0.2 REQUIRED)
 
 if (NOT CPP-NETLIB_INCLUDE_DIR)
@@ -23,10 +20,10 @@ set (KeySmithClient_VERSION_MAJOR 1)
 set (KeySmithClient_VERSION_MINOR 0)
 
 # Boost includes
-include_directories("${BOOST_INCLUDEDIR}")
+include_directories("${Boost_INCLUDE_DIR}")
 
 # Boost libraries
-link_directories("${BOOST_LIBRARYDIR}")
+link_directories("${Boost_LIBRARY_DIRS}")
 
 # Cpp-Netlib includes
 include_directories("${CPP-NETLIB_INCLUDE_DIR}")
@@ -41,7 +38,10 @@ SET(KeySmithClientExe ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_SOURCE_DIR}/src/K
 
 ADD_EXECUTABLE(KeySmithClient ${KeySmithClientExe})
 
-TARGET_LINK_LIBRARIES(KeySmithClient boost_filesystem boost_system boost_thread cppnetlib-client-connections cppnetlib-server-parsers cppnetlib-uri ssl crypto)
+TARGET_LINK_LIBRARIES(KeySmithClient ${Boost_LIBRARIES} cppnetlib-client-connections cppnetlib-server-parsers cppnetlib-uri ${OPENSSL_LIBRARIES})
 
 add_definitions(-DBOOST_NETWORK_ENABLE_HTTPS)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
