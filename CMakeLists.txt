@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.2)
 
 project (KeySmithClient)
 
-find_package(Boost 1.59 REQUIRED filesystem)
+find_package(Boost 1.59 REQUIRED system filesystem thread)
 
 find_package(OpenSsl 1.0.2 REQUIRED)
 
@@ -42,6 +42,6 @@ TARGET_LINK_LIBRARIES(KeySmithClient ${Boost_LIBRARIES} cppnetlib-client-connect
 
 add_definitions(-DBOOST_NETWORK_ENABLE_HTTPS)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
