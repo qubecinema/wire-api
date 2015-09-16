@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.2)
 
 project (KeySmithClient)
 
-find_package(Boost 1.59 REQUIRED system filesystem thread)
+find_package(Boost 1.58 REQUIRED system filesystem thread)
 
 find_package(OpenSsl 1.0.2 REQUIRED)
 

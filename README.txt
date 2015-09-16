@@ -10,7 +10,7 @@ the following functionalities of a mastering client.
 Dependencies
 ============
 The following C++ libraries are required to build KeySmithClient.
-    - Boost v1.59.0 or latest
+    - Boost v1.58.0 or latest
     - cpp-netlib v0.11.1 or latest
     - OpenSSL 1.0.2 or latest
 
@@ -18,8 +18,13 @@ Build Instructions
 =================
 Extract the source of KeySmithClient into a directory and execute the following inside the directory.
 
+Note: Following commands will give you expected output assuming that you have boost and openssl installed in system default paths. 
+
     $ mkdir build
     $ cd build
-    $ cmake -DBOOST_INCLUDEDIR=<boost include dir path> -DBOOST_LIBRARYDIR=<boost library dir path> -DCPP-NETLIB_INCLUDE_DIR=<cpp-netLib include dir path> -DCPP-NETLIB_LIBRARY_DIR=<cpp-NetLib library dir path> ..
+    $ cmake -DCPP-NETLIB_INCLUDE_DIR=<cpp-netLib include dir path> -DCPP-NETLIB_LIBRARY_DIR=<cpp-NetLib library dir path> ..
     $ make
 
+If you don’t have boost or openssl installed in system paths, then use the following cmake command instead of the one mentioned above.
+
+    $ cmake -DBOOST_INCLUDEDIR=<boost include dir path> -DBOOST_LIBRARYDIR=<boost library dir path> -DCPP-NETLIB_INCLUDE_DIR=<cpp-netLib include dir path> -DCPP-NETLIB_LIBRARY_DIR=<cpp-NetLib library dir path> OPENSSL_INCLUDE_DIR=<openssl include dir path> OPENSSL_LIBRARIES=<openssl libraries> ..
