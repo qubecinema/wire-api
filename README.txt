@@ -1,21 +1,21 @@
 Overview
 ========
-KeySmithClient is a C++ application demonstrating KeySmith mastering APIs. It demonstrates the following functionalities of a mastering client.
-    - Logging in and acquiring acess token
+QubeWireClient is a C++ application demonstrating Qube Wire mastering APIs. It demonstrates the following functionalities of a mastering client.
+    - Logging in and acquiring access token
     - Obtaining logged in user and company information
-    - Signing a CPL/PKL using KeySmith
-    - Uploading DKDM into KeySmith
+    - Signing a CPL/PKL using Qube Wire
+    - Uploading DKDM into Qube Wire
 
 Dependencies
 ============
-The following C++ libraries are required to build KeySmithClient.
+The following C++ libraries are required to build QubeWireClient.
     - Boost v1.58.0 or latest
     - cpp-netlib v0.11.1 or latest
     - OpenSSL 1.0.2 or latest
 
 Build Instructions
 =================
-Extract the source of KeySmithClient into a directory and execute the following inside the directory.
+Extract the source of QubeWireClient into a directory and execute the following inside the directory.
 
 Linux and Mac OSX:
     $ mkdir build
@@ -31,4 +31,3 @@ Windows:
     $ set OPENSSL_ROOT_DIR=<openssl dir path>
     $ cmake -DBOOST_INCLUDEDIR=<boost include dir path> -DBOOST_LIBRARYDIR=<boost library dir path> -DCPP-NETLIB_INCLUDE_DIR=<cpp-netLib include dir path> -DCPP-NETLIB_LIBRARY_DIR=<cpp-netLib library dir path> ..
     $ make
-

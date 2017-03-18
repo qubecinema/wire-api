@@ -1,7 +1,7 @@
 
 cmake_minimum_required (VERSION 3.2)
 
-project (KeySmithClient)
+project (QubeWireClient)
 
 find_package(Boost 1.58 REQUIRED system filesystem thread)
 
@@ -16,8 +16,8 @@ if (NOT CPP-NETLIB_LIBRARY_DIR)
 endif()
 
 # Add version number
-set (KeySmithClient_VERSION_MAJOR 1)
-set (KeySmithClient_VERSION_MINOR 0)
+set (QubeWireClient_VERSION_MAJOR 1)
+set (QubeWireClient_VERSION_MINOR 0)
 
 # Boost includes
 include_directories("${Boost_INCLUDE_DIR}")
@@ -34,11 +34,11 @@ link_directories("${CPP-NETLIB_LIBRARY_DIR}")
 # OpenSsl includes
 include_directories("${OPENSSL_INCLUDE_DIR}")
 
-SET(KeySmithClientExe ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_SOURCE_DIR}/src/KeySmithClient.cpp)
+SET(QubeWireClientExe ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_SOURCE_DIR}/src/QubeWireClient.cpp)
 
-ADD_EXECUTABLE(KeySmithClient ${KeySmithClientExe})
+ADD_EXECUTABLE(QubeWireClient ${QubeWireClientExe})
 
-TARGET_LINK_LIBRARIES(KeySmithClient ${Boost_LIBRARIES} cppnetlib-client-connections cppnetlib-server-parsers cppnetlib-uri ${OPENSSL_LIBRARIES})
+TARGET_LINK_LIBRARIES(QubeWireClient ${Boost_LIBRARIES} cppnetlib-client-connections cppnetlib-uri ${OPENSSL_LIBRARIES})
 
 add_definitions(-DBOOST_NETWORK_ENABLE_HTTPS)
 

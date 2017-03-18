@@ -1,21 +1,20 @@
 /**
  * @file NamespaceMacros.h
- * @author  Qube Dev <QubeDev@realimage.com>
 
- * @copyright Copyright &copy; 2015 Qube Cinema Inc. All Rights reserved
+ * @copyright Copyright &copy; 2017 Qube Cinema Inc. All Rights reserved
  *
  * @brief
- * Defines namespace of KeySmithClient application
+ * Defines namespace of QubeWireClient application
  */
 
 #pragma once
 
-#define KEY_SMITH_NS Qube::KeySmith
-#define KEY_SMITH_NS_START                                                                            \
-    namespace Qube                                                                                 \
-    {                                                                                              \
-        namespace KeySmith                                                                        \
-        {
-#define KEY_SMITH_NS_STOP                                                                             \
+#define QUBE_WIRE_NS Qube::Wire
+#define QUBE_WIRE_NS_START                                                                            \
+  namespace Qube                                                                                 \
+  {                                                                                              \
+    namespace Wire                                                                        \
+    {
+#define QUBE_WIRE_NS_STOP                                                                             \
     }                                                                                              \
-    }
+  }

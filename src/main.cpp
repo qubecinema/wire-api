@@ -1,4 +1,4 @@
-#include "KeySmithClient.h"
+#include "QubeWireClient.h"
 
 #include <memory>
 #include <iostream>
@@ -9,7 +9,7 @@
 
 #include <boost/algorithm/string/replace.hpp>
 
-using namespace KEY_SMITH_NS;
+using namespace QUBE_WIRE_NS;
 using namespace std;
 
 void ShowActionMenu()
@@ -54,19 +54,19 @@ void WriteToFile(const string& filePath, const string& content)
 
 int main (int argc, char *argv[])
 {
-    unique_ptr<KeySmithClient> keySmithClient;
+    unique_ptr<QubeWireClient> qubeWireClient;
     try
     {
         if (argc != 2)
-            throw runtime_error("Usage: KeySmithClient <Client ID>");
+            throw runtime_error("Usage: QubeWireClient <Client ID>");
 
-        keySmithClient.reset(new KeySmithClient("https://api.keysmith.com", argv[1]));
+        qubeWireClient.reset(new QubeWireClient(argv[1]));
 
-        LaunchCommand(keySmithClient->GetLoginUrl());
-        cout << "KeySmith sign-in page opened in web browser. Please sign-in to proceed." << endl;
+        LaunchCommand(qubeWireClient->GetLoginUrl());
+        cout << "Qube Wire sign-in page opened in web browser. Please sign-in to proceed." << endl;
 
         cout << "Waiting for user to sign-in..." << std::flush;
-        while (!keySmithClient->IsAuthenticated())
+        while (!qubeWireClient->IsAuthenticated())
         {
 
             this_thread::sleep_for(chrono::seconds(2)); // Waiting for 2 seconds to poll again
@@ -74,7 +74,7 @@ int main (int argc, char *argv[])
         cout << endl;
 
         string email, companyName;
-        keySmithClient->GetUserInfo(email, companyName);
+        qubeWireClient->GetUserInfo(email, companyName);
         cout << "Successfully signed in as " << email << " (" << companyName << ")" << endl;
 
         while (true)
@@ -93,12 +93,12 @@ int main (int argc, char *argv[])
 
                     string unsignedXml = GetFileContents(filePath);
 
-                    cout << "Uploading CPL/PKL to KeySmith for signing..." << endl;
-                    string xmlId = keySmithClient->Sign(unsignedXml);
+                    cout << "Uploading CPL/PKL to Qube Wire for signing..." << endl;
+                    string xmlId = qubeWireClient->Sign(unsignedXml);
 
-                    cout << "Waiting for KeySmith to sign the CPL/PKL..." << std::flush;
+                    cout << "Waiting for Qube Wire to sign the CPL/PKL..." << std::flush;
                     string signedXml;
-                    while (!keySmithClient->GetSignedAssetXml(xmlId, signedXml))
+                    while (!qubeWireClient->GetSignedAssetXml(xmlId, signedXml))
                     {
                         this_thread::sleep_for(chrono::seconds(2));
                     }
@@ -118,29 +118,29 @@ int main (int argc, char *argv[])
                     cin >> filePath;
 
                     string xml = GetFileContents(filePath);
-                    cout << "Uploading DKDM to KeySmith..." << endl;
-                    string xmlId = keySmithClient->UploadKdm(xml);
+                    cout << "Uploading DKDM to Qube Wire..." << endl;
+                    string xmlId = qubeWireClient->UploadKdm(xml);
 
                     // DKDMs are internally signed before getting stored. A successful DKDM sign
                     // indicates DKDM passes all validations and successfully uploaded.
-                    cout << "Waiting for KeySmith to compete the DKDM upload..." << std::flush;
+                    cout << "Waiting for Qube Wire to compete the DKDM upload..." << std::flush;
                     string statusJson;
-                    while (!keySmithClient->GetSignedAssetXml(xmlId, statusJson))
+                    while (!qubeWireClient->GetSignedAssetXml(xmlId, statusJson))
                     {
                         this_thread::sleep_for(chrono::seconds(2));
                     }
                     cout << endl;
 
-                    // DKDMs once uploaded can't be retrieved out of KeySmith. But we can generate
-                    // DKDM/KDM from it through KeySmith.
-                    cout << "DKDM successfully signed and available uploaded DKDM into KeySmith." << endl;
+                    // DKDMs once uploaded can't be retrieved out of Qube Wire. But we can generate
+                    // DKDM/KDM from it through Qube Wire.
+                    cout << "DKDM successfully signed and available uploaded DKDM into Qube Wire." << endl;
                     break;
                 }
 
                 case 3: // Quit
                 {
                     // deleting access token ensures that it can't be used again.
-                    keySmithClient->ResetToken();
+                    qubeWireClient->ResetToken();
                     return 0;
                 }
 
@@ -158,8 +158,8 @@ int main (int argc, char *argv[])
         try
         {
             // Just to make sure we delete the token in case of failure.
-            if (keySmithClient && keySmithClient->GetToken() != "")
-                keySmithClient->ResetToken();
+            if (qubeWireClient && qubeWireClient->GetToken() != "")
+                qubeWireClient->ResetToken();
         }
         catch (...)
         {
